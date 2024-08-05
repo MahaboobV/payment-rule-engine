@@ -1,4 +1,4 @@
-Payment Rule Engine 
+# Payment Rule Engine 
 
 # Overview
 The Payment Rule Engine is a Java-based application built using Spring Boot. It processes payment transactions and routes them according to predefined rules
@@ -86,4 +86,6 @@ Repone :
     "currency": "SEK"
 }
 
-
+# Testing
+You can run the tests using Maven:
+mvc test
