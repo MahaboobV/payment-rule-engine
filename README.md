@@ -84,6 +84,6 @@ Repone :
     "paymentMethod": null,
     "customerType": "Non-Employee",
     "currency": "SEK"
-
+}
 
 
