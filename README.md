@@ -88,4 +88,4 @@ Repone :
 
 # Testing
 You can run the tests using Maven:
-mvc test
+mvn test
