@@ -18,11 +18,11 @@ public class PaymentTransactionResponseDTO {
 
     private String additionalInfo;
 
-    private boolean dsEnabled;
-
     private String location;
 
     private String paymentMethod;
 
     private String customerType;
+
+    private String currency;
 }

@@ -1,6 +1,5 @@
 package org.payment.repository;
 
-import org.payment.entity.PaymentRules;
 import org.payment.entity.PaymentTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +17,7 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
 
     @Query("SELECT pt FROM PaymentTransaction pt WHERE pt.paymentCardNetwork = :cardType AND pt.currency = :currency AND (pt.transactionDate BETWEEN :transactionDateStart AND :transactionDateEnd)")
     List<PaymentTransaction> findTransactionsforDay(@Param("cardType") String cardType, @Param("currency") String currency, @Param("transactionDateStart") LocalDateTime transactionDateStart, @Param("transactionDateEnd") LocalDateTime transactionDateEnd);
+
+    @Query("SELECT count(pt) > 0 FROM PaymentTransaction pt WHERE pt.customerId = :customerId")
+    Boolean customerExist(@Param("customerId")String customerId);
 }

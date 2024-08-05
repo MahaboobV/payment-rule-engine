@@ -50,8 +50,8 @@ public class    PaymentController {
     }
 
     @PostMapping("/confirm/transaction")
-    public ResponseEntity<String> savePaymentTransaction(@RequestBody PaymentTransactionDTO transaction) throws IOException {
-        String response = transactionService.storePaymentTransaction(transaction);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public ResponseEntity<PaymentTransactionResponseDTO> savePaymentTransaction(@RequestBody PaymentTransactionDTO transaction) throws IOException {
+        PaymentTransactionResponseDTO responseDTO = transactionService.storePaymentTransaction(transaction);
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 }

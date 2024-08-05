@@ -115,7 +115,7 @@ public class PaymentControllerTest {
 
     @Test
     public void testSavePaymentTransaction() throws Exception {
-        when(transactionServiceMock.storePaymentTransaction(any(PaymentTransactionDTO.class))).thenReturn("Payment Transaction Saved !");
+        when(transactionServiceMock.storePaymentTransaction(any(PaymentTransactionDTO.class))).thenReturn(paymentTransactionResponseDTO);
 
         mockMvc.perform(post("/api/payments/confirm/transaction").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(paymentTransactionDTO))).andExpect(status().isOk());

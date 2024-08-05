@@ -22,9 +22,12 @@ public class AccessService {
     }
 
     public boolean check3DSAccess(PaymentTransactionDTO paymentTransactionDTO) {
-        LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
-
-        return transactionRepository.exist3DSEnabledTransactions(paymentTransactionDTO.getCustomerId(), oneYearAgo);
+        if(transactionRepository.customerExist(paymentTransactionDTO.getCustomerId())) {
+            LocalDateTime oneYearAgo = LocalDateTime.now().minusYears(1);
+            return transactionRepository.exist3DSEnabledTransactions(paymentTransactionDTO.getCustomerId(), oneYearAgo);
+        }else {
+            return false;
+        }
     }
 
     public void routeToAcquirer(List<PaymentTransactionDTO> transactions, String acquirerName) {

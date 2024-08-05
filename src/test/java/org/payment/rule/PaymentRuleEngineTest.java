@@ -1,4 +1,4 @@
-package org.payment.service;
+package org.payment.rule;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,6 +13,7 @@ import org.payment.action.ErrorAction;
 import org.payment.action.PaymentMethodAction;
 import org.payment.engine.PaymentRuleEngine;
 import org.payment.entity.PaymentRules;
+import org.payment.exception.PaymentRuleViolationException;
 import org.payment.loader.RuleLoader;
 import org.payment.model.PaymentTransactionDTO;
 import org.payment.model.PaymentTransactionErrorResponseDTO;
@@ -20,9 +21,6 @@ import org.payment.model.PaymentTransactionResponseDTO;
 import org.payment.model.RuleViolation;
 import org.payment.repository.PaymentRuleEngineRepository;
 import org.payment.repository.PaymentRulesRepository;
-import org.payment.rule.PaymentMethodRule;
-import org.payment.rule.Rule;
-import org.payment.rule.TransactionAmountRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -31,13 +29,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
-public class PaymentRuleEngineServiceTest {
+public class PaymentRuleEngineTest {
 
     @MockBean
     private PaymentRuleEngineRepository paymentRuleEngineRepositoryMock;
@@ -49,12 +47,8 @@ public class PaymentRuleEngineServiceTest {
     @MockBean
     private RuleLoader ruleLoaderMock;
 
-    @MockBean
-    private PaymentRuleEngine paymentRuleEngineMock;
-
     @Autowired
-    private PaymentRuleEngineService ruleEngineService;
-
+    private PaymentRuleEngine paymentRuleEngine;
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -141,23 +135,60 @@ public class PaymentRuleEngineServiceTest {
     }
 
     @Test
-    public void testEvaluateTransactionH2() throws IOException {
-        when(paymentRuleEngineMock.evaluateTransactionH2(any(PaymentTransactionDTO.class))).thenReturn(paymentTransactionResponseDTO);
-        PaymentTransactionResponseDTO responseDTO = ruleEngineService.evaluateTransactionH2(paymentTransactionDTO);
+    public void testEvaluatePaymentTransaction() throws IOException {
+        when(rulesRepositoryMock.findAll()).thenReturn(paymentRulesList);
+        when(ruleLoaderMock.parseRule(any(JsonNode.class))).thenReturn(rules.get(0));
+
+        PaymentTransactionResponseDTO responseDTO = paymentRuleEngine.evaluateTransactionH2(paymentTransactionDTO);
         assertEquals(responseDTO.getAmount(), paymentTransactionResponseDTO.getAmount());
 
-        verify(paymentRuleEngineMock, times(1)).evaluateTransactionH2(any(PaymentTransactionDTO.class));
+        verify(rulesRepositoryMock, times(1)).findAll();
+        verify(ruleLoaderMock, times(2)).parseRule(any(JsonNode.class));
     }
 
+    @Test
+    public void testEvaluatePaymentTransactionWithRule() throws IOException {
+
+        List<String> applicableRules = paymentRuleEngine.evaluatePaymentTransaction(rules, paymentTransactionDTO);
+        assertTrue(applicableRules.size() != 0);
+    }
+
+    @Test
+    public void testEvaluatePaymentTransactionWithoutRule() throws IOException {
+        when(ruleLoaderMock.loadRules()).thenReturn(rules);
+
+        List<String> applicableRules = paymentRuleEngine.evaluatePaymentTransaction(paymentTransactionDTO);
+        assertTrue(applicableRules.size()!=0);
+
+        verify(ruleLoaderMock, times(2)).loadRules();
+    }
+
+    @Test
+    public void testEvaluateTransactionH2_failure() throws IOException {
+        ErrorAction errorAction = new ErrorAction("Error while processing!");
+        Action action1 = new PaymentMethodAction("PaymentMethod", List.of("VIPPS", "Credit Card"));
+        Rule rule = new PaymentMethodRule("TEST", List.of("Credit Card"), action1, errorAction);
+
+        when(rulesRepositoryMock.findAll()).thenReturn(paymentRulesList);
+        when(ruleLoaderMock.parseRule(any(JsonNode.class))).thenReturn(rule);
+        PaymentRuleViolationException violationException = assertThrows(PaymentRuleViolationException.class, () -> {
+            paymentRuleEngine.evaluateTransactionH2(paymentTransactionDTO);
+        });
+        assertEquals("Rules violated !", violationException.getMessage());
+
+        verify(rulesRepositoryMock, times(1)).findAll();
+        verify(ruleLoaderMock, times(2)).parseRule(any(JsonNode.class));
+    }
 
     @Test
     public void testProcessRules() throws IOException {
-        when(paymentRuleEngineMock.processRules(any(JsonNode.class))).thenReturn("Payment Rules loaded!");
+        when(ruleLoaderMock.loadPaymentRules()).thenReturn("Payment Rules loaded!");
 
-        String respone = ruleEngineService.processRules(ruleNode);
+        String respone = paymentRuleEngine.processRules(ruleNode);
         assertEquals(respone, "Payment Rules loaded!");
 
-        verify(paymentRuleEngineMock, times(1)).processRules(any(JsonNode.class));
+        verify(ruleLoaderMock, times(1)).loadPaymentRules();
     }
+
 
 }

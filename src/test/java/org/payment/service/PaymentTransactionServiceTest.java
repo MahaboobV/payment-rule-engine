@@ -4,12 +4,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.payment.engine.PaymentRuleEngine;
 import org.payment.entity.PaymentTransaction;
 import org.payment.model.PaymentTransactionDTO;
+import org.payment.model.PaymentTransactionResponseDTO;
 import org.payment.repository.PaymentTransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+
+import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -21,11 +26,16 @@ public class PaymentTransactionServiceTest {
     @MockBean
     private PaymentTransactionRepository paymentTransactionRepositoryMock;
 
+    @MockBean
+    private PaymentRuleEngine paymentRuleEngineMock;
+
     @Autowired
     private PaymentTransactionService transactionService;
 
 
     private PaymentTransactionDTO paymentTransactionDTO;
+
+    private PaymentTransactionResponseDTO transactionResponseDTO;
 
     private PaymentTransaction paymentTransactionEntity;
 
@@ -52,17 +62,22 @@ public class PaymentTransactionServiceTest {
         paymentTransactionEntity.setPaymentMethod("VIPPS");
         paymentTransactionEntity.setCardType("Credit Card");
 
+        transactionResponseDTO = new PaymentTransactionResponseDTO();
+        transactionResponseDTO.setAdditionalInfo("Payment Transaction Saved !");
+
     }
 
     @Test
-    public void testStorePaymentTransaction() {
+    public void testStorePaymentTransaction() throws IOException {
         when(paymentTransactionRepositoryMock.save(paymentTransactionEntity)).thenReturn(paymentTransactionEntity);
+        when(paymentRuleEngineMock.evaluatePaymentTransaction(any(PaymentTransactionDTO.class))).thenReturn(List.of("ApplicableRules"));
 
-        String respone = transactionService.storePaymentTransaction(paymentTransactionDTO);
+        PaymentTransactionResponseDTO respone = transactionService.storePaymentTransaction(paymentTransactionDTO);
 
-        assertEquals("Payment Transaction Saved !", respone);
+        assertEquals("Payment Transaction Saved!", respone.getAdditionalInfo());
 
         verify(paymentTransactionRepositoryMock, times(1)).save(any(PaymentTransaction.class));
+        verify(paymentRuleEngineMock, times(1)).evaluatePaymentTransaction(anyList(), any(PaymentTransactionDTO.class));
 
     }
 }
