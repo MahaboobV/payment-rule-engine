@@ -1,27 +1,27 @@
 Payment Rule Engine 
 
-Overview
+#Overview
 The Payment Rule Engine is a Java-based application built using Spring Boot. It processes payment transactions and routes them according to predefined rules
 
 
-Features
+#Features
 Process payment transactions based on customizable rules
 
 
-Prerequisites
+#Prerequisites
 Java 17
 Maven 3.8.0 or higher
 An IDE (IntelliJ, Eclipse.)
 
 
-Getting Started
+#Getting Started
 Clone the Repository
 
 git clone https://github.com/MahaboobV/payment-rule-engine.git
 
 cd payment-rule-engine
 
-Building the Application
+#Building the Application
 Use Maven to build the project:
 mvn clean install
 
@@ -29,23 +29,23 @@ mvn clean install
 Configuration
 The application uses an application.properties file for configuration. Here are some key settings
 
-#H2 Configuration
+H2 Configuration
 
 spring.datasource.url=jdbc:h2:mem:testdb
 spring.datasource.username=sa
 spring.datasource.password=password
 spring.datasource.driver-class-name=org.h2.Driver
 
-# JPA/Hibernate Configuration
+JPA/Hibernate Configuration
 spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
 spring.jpa.hibernate.ddl-auto=update
 
-# H2 Console Configuration
+H2 Console Configuration
 spring.h2.console.enabled=true
 spring.h2.console.path=/h2-console
 
 
-API Endpoints
+#API Endpoints
 Load  Payment rules from JSON config file 
 URL: /api/payments/loadRules
 
