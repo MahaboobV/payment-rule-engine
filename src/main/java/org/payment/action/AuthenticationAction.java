@@ -1,29 +1,20 @@
 package org.payment.action;
 
-import org.payment.model.PaymentTransaction;
+import org.payment.model.PaymentTransactionDTO;
 
 public class AuthenticationAction implements Action {
 
-    private String messageTemplate;
-    private boolean dsEnabled;
+    private final String messageTemplate;
 
-    public AuthenticationAction(String messageTemplate, boolean dsEnabled) {
+    public AuthenticationAction(String messageTemplate) {
         this.messageTemplate = messageTemplate;
-        this.dsEnabled = dsEnabled;
     }
 
     @Override
-    public void execute(PaymentTransaction transaction) {
-        String message = messageTemplate.replace("{dsEnabled}", Boolean.toString(dsEnabled));
-        if(isConditionMet(transaction)) {
-            System.out.println("Authentication not required :"+message);
-        }else  {
-            System.out.println("Authentication required :"+message);
-        }
-    }
-
-    private boolean isConditionMet(PaymentTransaction transaction) {
-        return transaction.isDsEnabled() == dsEnabled;
+    public String execute(PaymentTransactionDTO transaction) {
+        String message = messageTemplate.replace("{dsEnabled}", String.valueOf(true));
+        System.out.println("Authentication not required :"+message);
+        return "Authentication not required :" + message;
     }
 
     @Override

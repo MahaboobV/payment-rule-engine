@@ -1,33 +1,33 @@
 package org.payment.action;
 
-import org.payment.model.PaymentTransaction;
+import org.payment.model.PaymentTransactionDTO;
 
 import java.util.List;
 
-public class AdditionalInfoAction implements Action{
+public class AdditionalInfoAction implements Action {
 
-    private double thresholdAmount;
+    private final double thresholdAmount;
 
-    private String messageTemplate;
+    private final String messageTemplate;
 
-    private String criteria;
-    private List<String> riskCountries;
+    private final List<String> riskCountries;
 
 
     public AdditionalInfoAction(double thresholdAmount, String messageTemplate, String criteria, List<String> riskCountries) {
         this.thresholdAmount = thresholdAmount;
         this.messageTemplate = messageTemplate;
-        this.criteria = criteria;
         this.riskCountries = riskCountries;
     }
 
 
     @Override
-    public void execute(PaymentTransaction transaction) {
-        if(isConditionMet(transaction)) {
-            String message = messageTemplate.replace("{thresholdAmount}", String.valueOf(thresholdAmount));
+    public String execute(PaymentTransactionDTO transaction) {
+        String message = null;
+        if (isConditionMet(transaction)) {
+            message = messageTemplate.replace("{thresholdAmount}", String.valueOf(thresholdAmount));
             System.out.println(message);
         }
+        return message;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class AdditionalInfoAction implements Action{
         return messageTemplate;
     }
 
-    public boolean isConditionMet(PaymentTransaction transaction) {
+    public boolean isConditionMet(PaymentTransactionDTO transaction) {
         return transaction.getAmount() > thresholdAmount && riskCountries.contains(transaction.getLocation());
     }
 

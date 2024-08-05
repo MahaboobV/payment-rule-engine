@@ -1,9 +1,9 @@
 package org.payment.rule;
 
 import org.payment.action.Action;
-import org.payment.model.PaymentTransaction;
+import org.payment.model.PaymentTransactionDTO;
 
 public interface Rule {
-    boolean evaluate(PaymentTransaction paymentTransaction);
+    boolean evaluate(PaymentTransactionDTO paymentTransaction);
     Action getAction();
 }

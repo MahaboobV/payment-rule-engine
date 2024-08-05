@@ -1,8 +1,8 @@
 package org.payment.action;
 
-import org.payment.model.PaymentTransaction;
+import org.payment.model.PaymentTransactionDTO;
 
-public class FeatureAction implements Action{
+public class FeatureAction implements Action {
 
     private String messageTemplate;
 
@@ -11,8 +11,9 @@ public class FeatureAction implements Action{
     }
 
     @Override
-    public void execute(PaymentTransaction transaction) {
+    public String execute(PaymentTransactionDTO transaction) {
         System.out.println(transaction.getCustomerType() + messageTemplate);
+        return transaction.getCustomerType() + messageTemplate;
     }
 
     @Override

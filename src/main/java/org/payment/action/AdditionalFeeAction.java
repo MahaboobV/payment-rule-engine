@@ -1,10 +1,10 @@
 package org.payment.action;
 
-import org.payment.model.PaymentTransaction;
+import org.payment.model.PaymentTransactionDTO;
 
-public class AdditionalFeeAction implements Action{
-    private String messageTemplate;
-    private double thresholdAmount;
+public class AdditionalFeeAction implements Action {
+    private final String messageTemplate;
+    private final double thresholdAmount;
 
     public AdditionalFeeAction(String messageTemplate, double thresholdAmount) {
         this.messageTemplate = messageTemplate;
@@ -12,14 +12,19 @@ public class AdditionalFeeAction implements Action{
     }
 
     @Override
-    public void execute(PaymentTransaction transaction) {
-        if(isConditionMet(transaction)) {
-            String message = messageTemplate.replace("{amount}", String.valueOf(transaction.getAmount()));
+    public String execute(PaymentTransactionDTO transaction) {
+        String message = null;
+        if (isConditionMet(transaction)) {
+            message = messageTemplate.replace("{amount}", String.valueOf(transaction.getAmount()));
             System.out.println(message);
+            double additionalFee = (double)2/100;
+            transaction.setAmount(transaction.getAmount() * additionalFee);
+            return message;
         }
+        return message;
     }
 
-    private boolean isConditionMet(PaymentTransaction transaction) {
+    private boolean isConditionMet(PaymentTransactionDTO transaction) {
         return transaction.getAmount() <= thresholdAmount;
     }
 

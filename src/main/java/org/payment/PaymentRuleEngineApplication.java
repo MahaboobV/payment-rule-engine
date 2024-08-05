@@ -1,34 +1,25 @@
 package org.payment;
 
-import org.payment.loader.RuleLoader;
-import org.payment.rule.Rule;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.io.IOException;
-import java.util.List;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
-public class PaymentRuleEngineApplication implements CommandLineRunner {
-
-    @Autowired
-    private RuleLoader ruleLoader;
-
+@EnableScheduling
+public class PaymentRuleEngineApplication {
+    private static final Logger logger = LoggerFactory.getLogger(PaymentRuleEngineApplication.class);
 
     public static void main(String[] args) {
         SpringApplication.run(PaymentRuleEngineApplication.class, args);
-        System.out.println("Payment Rule Engine Started!");
+        logger.info("Payment Rule Engine Started!");
     }
 
-    @Override
-    public void run(String... args) {
-        try {
-            List<Rule> rules = ruleLoader.loadRules();
-            System.out.println("Loaded rules: " + rules);
-        } catch (IOException e) {
-            System.err.println("Failed to load rules: " + e.getMessage());
-        }
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }

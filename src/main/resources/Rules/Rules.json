@@ -1,23 +1,36 @@
 {
   "rules": [
     {
+      "id": "Rule1",
       "type": "CustomerTypeRule",
-      "customerType": "3DS",
+      "customerType": "Employee",
+      "action": {
+        "type": "FeatureAction",
+        "messageTemplate": "Enable new feature : 20% discount available"
+      }
+    },
+    {
+      "id": "Rule2",
+      "type": "DSAuthenticationRule",
+      "customerType": "Non-Employee",
       "action": {
         "type": "AuthenticationAction",
-        "3dslastyear" : true,
         "messageTemplate": "Waive off 3DS for transaction : {dsEnabled}"
       }
     },
     {
+      "id": "Rule3",
       "type": "PaymentMethodRule",
       "location": "NORWAY",
+      "paymentMethods": ["VIPPS", "Credit Card", "Debit Card", "OnlineBanking"]
       "action": {
         "type": "PaymentMethodAction",
-        "messageTemplate": "Available Payment methods in {location} are : VIPPS"
+        "paymentMethods": ["VIPPS", "Credit Card", "Debit Card", "OnlineBanking"],
+        "messageTemplate": "Available Payment methods in {location} are : {paymentMethods}"
       }
     },
     {
+      "id": "Rule4",
       "type": "TransactionAmountRule",
       "minAmount": 100.0,
       "maxAmount": 100000.0,
@@ -29,6 +42,7 @@
       }
     },
     {
+      "id": "Rule5",
       "type": "CardTypeRule",
       "cardType": "Credit Card",
       "action": {
@@ -38,21 +52,18 @@
       }
     },
     {
-      "type": "NewFeatureRule",
-      "customerType": "Employee",
-      "action": {
-        "type": "FeatureAction",
-        "messageTemplate": "Enable new feature"
-      }
-    },
-    {
-      "type": "PaymentCardNetworkRule",
+      "id": "Rule6",
+      "type": "TransactionRouteRule",
       "paymentNetwork": "Mastercard",
       "currency": "SEK",
       "action": {
         "type": "RoutingAction",
+        "paymentNetwork": "Mastercard",
         "currency": "SEK",
-        "messageTemplate": "20% of transactions routed to Acquirer A. 50% transactions routed to Acquirer B. 30% of transactions routed to Acquirer C"
+        "AcquirerA": "20",
+        "AcquirerB": "50",
+        "AcquirerC": "30",
+        "messageTemplate": "20% of transactions = {countA} routed to Acquirer A. 50% transactions = {countB} routed to Acquirer B. 30% of transactions = {countC} routed to Acquirer C"
       }
     }
   ]

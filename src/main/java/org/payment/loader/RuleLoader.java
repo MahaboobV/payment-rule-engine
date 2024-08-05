@@ -3,7 +3,11 @@ package org.payment.loader;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.payment.action.*;
+import org.payment.entity.PaymentRules;
+import org.payment.repository.PaymentRulesRepository;
 import org.payment.rule.*;
+import org.payment.service.AccessService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -20,15 +24,49 @@ public class RuleLoader {
 
     private ResourceLoader resourceLoader;
 
+    private PaymentRulesRepository rulesRepository;
+
+    private AccessService accessService;
+
+    private ObjectMapper mapper;
+
     @Value("${rules.file.path}")
     private String filePath;
 
-    public RuleLoader(ResourceLoader resourceLoader) {
+    @Autowired
+    public RuleLoader(ResourceLoader resourceLoader, PaymentRulesRepository rulesRepository,
+                      AccessService accessService, ObjectMapper mapper) {
         this.resourceLoader = resourceLoader;
+        this.rulesRepository = rulesRepository;
+        this.accessService = accessService;
+        this.mapper = mapper;
     }
 
+    /**
+     *
+     * @return
+     * @throws IOException
+     */
     public List<Rule> loadRules() throws IOException {
+        Resource resource = resourceLoader.getResource("classpath:" + filePath);
 
+        if (!resource.exists()) {
+            throw new IOException("File not found: " + resource.getURI());
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        try (InputStream inputStream = resource.getInputStream()) {
+            JsonNode rootNode = objectMapper.readTree(inputStream);
+            JsonNode rulesNode = rootNode.path("rules");
+            return parseRules(rulesNode);
+        }
+    }
+
+    /**
+     *
+     * @return
+     * @throws IOException
+     */
+    public String loadPaymentRules() throws IOException {
         Resource resource = resourceLoader.getResource("classpath:" + filePath);
 
         if (!resource.exists()) {
@@ -39,11 +77,25 @@ public class RuleLoader {
         try (InputStream inputStream = resource.getInputStream()) {
             JsonNode rootNode = objectMapper.readTree(inputStream);
             JsonNode rulesNode = rootNode.path("rules");
-            return parseRules(rulesNode);
+            Iterator<JsonNode> elements = rulesNode.elements();
+
+            while (elements.hasNext()) {
+                JsonNode ruleNode = elements.next();
+                String ruleId = ruleNode.get("id").asText();
+                String ruleJson = objectMapper.writeValueAsString(ruleNode);
+                PaymentRules paymentRules = new PaymentRules(ruleId, ruleJson);
+                rulesRepository.save(paymentRules);
+            }
+            return "paymentRules Loaded";
         }
     }
 
-    private List<Rule> parseRules(JsonNode rootNode) {
+    /**
+     *
+     * @param rootNode
+     * @return
+     */
+    public List<Rule> parseRules(JsonNode rootNode) {
         List<Rule> rules = new ArrayList<>();
         for (JsonNode ruleNode : rootNode) {
             String ruleType = ruleNode.path("type").asText();
@@ -51,31 +103,33 @@ public class RuleLoader {
             Action action = loadAction(actionNode);
 
             switch (ruleType) {
-                case "PaymentMethodRule":
-                    rules.add(new PaymentMethodRule(ruleNode.path("location").asText(), action));
-                    break;
-                case "CustomerTypeRule":
-                    rules.add(new CustomerTypeRule(ruleNode.path("customerType").asText(), action));
-                    break;
-                case "TransactionAmountRule":
-                    rules.add(new TransactionAmountRule(ruleNode.path("minAmount").asDouble(),
-                            ruleNode.path("maxAmount").asDouble(), action));
-                    break;
-                case "TransactionRouteRule":
-                    rules.add(new TransactionRouteRule(ruleNode.path("currency").asText(),
-                            ruleNode.path("paymentCardNetwork").asText(), action));
-                    break;
-                case "NewFeatureRule":
-                    rules.add(new NewFeatureRule(ruleNode.path("customerType").asText(), action));
-                    break;
-                case "CardTypeRule":
-                    rules.add(new CardTypeRule(ruleNode.path("cardType").asText(), action));
-                    break;
-                case "PaymentCardNetworkRule":
-                    rules.add(new PaymentCardNetworkRule(ruleNode.path("paymentNetwork").asText(), action));
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown rule type: " + ruleType);
+                case "PaymentMethodRule" -> {
+                    List<String> paymentMethods = new ArrayList<>();
+                    JsonNode paymentMethodNode = ruleNode.path("paymentMethods");
+                    Iterator<JsonNode> paymentMethodNodeIterator = ruleNode.path("paymentMethods").elements();
+                    while (paymentMethodNodeIterator.hasNext()) {
+                        paymentMethods.add(paymentMethodNodeIterator.next().asText());
+                    }
+                    rules.add(new PaymentMethodRule(ruleNode.path("location").asText(), paymentMethods, action));
+                }
+
+                case "CustomerTypeRule" -> rules.add(new CustomerTypeRule(ruleNode.path("customerType").asText(), action));
+
+                case "TransactionAmountRule" -> rules.add(new TransactionAmountRule(ruleNode.path("minAmount").asDouble(),
+                        ruleNode.path("maxAmount").asDouble(), action));
+
+                case "TransactionRouteRule" -> rules.add(new TransactionRouteRule(ruleNode.path("currency").asText(),
+                        ruleNode.path("paymentCardNetwork").asText(), action));
+
+                case "NewFeatureRule" -> rules.add(new NewFeatureRule(ruleNode.path("customerType").asText(), action));
+
+                case "CardTypeRule" -> rules.add(new CardTypeRule(ruleNode.path("cardType").asText(), action));
+
+                case "PaymentCardNetworkRule" -> rules.add(new PaymentCardNetworkRule(ruleNode.path("paymentNetwork").asText(), action));
+
+                case "DSAuthenticationRule" -> rules.add(new DSAuthenticationRule(accessService, ruleNode.path("customerType").asText(), action));
+
+                default -> throw new IllegalArgumentException("Unknown rule type: " + ruleType);
             }
         }
         return rules;
@@ -87,29 +141,97 @@ public class RuleLoader {
 
         switch (actionType) {
             case "RoutingAction":
-                String currency = actionNode.path("currency").asText();
-                return new RoutingAction(messageTemplate, currency);
+                int acquirerAPercentage = actionNode.path("AcquirerA").asInt();
+                int acquirerBPercentage = actionNode.path("AcquirerB").asInt();
+                int acquirerCPercentage = actionNode.path("AcquirerC").asInt();
+
+                return new RoutingAction(messageTemplate, acquirerAPercentage, acquirerBPercentage, acquirerCPercentage, accessService);
+
             case "AdditionalInfoAction":
                 List<String> riskCountries = new ArrayList<>();
                 double thresholdAmount = actionNode.path("thresholdAmount").asDouble();
                 String currencyTransaction = actionNode.path("currency").asText();
                 Iterator<JsonNode> locationNodes = actionNode.path("location").elements();
-                while(locationNodes.hasNext()) {
+                while (locationNodes.hasNext()) {
                     riskCountries.add(locationNodes.next().asText());
                 }
                 return new AdditionalInfoAction(thresholdAmount, messageTemplate, currencyTransaction, riskCountries);
+
             case "AdditionalFeeAction":
                 double tAmount = actionNode.path("thresholdAmount").asDouble();
                 return new AdditionalFeeAction(messageTemplate, tAmount);
+
             case "PaymentMethodAction":
-                return new PaymentMethodAction(messageTemplate);
+                JsonNode paymentMethodNode = actionNode.path("paymentMethods");
+                List<String> paymentMethods = new ArrayList<>();
+                if (paymentMethodNode.isArray()) {
+                    Iterator<JsonNode> elements = paymentMethodNode.elements();
+                    while (elements.hasNext()) {
+                        JsonNode method = elements.next();
+                        paymentMethods.add(method.asText());
+                    }
+                } else {
+                    paymentMethods.add(paymentMethodNode.asText());
+                }
+                return new PaymentMethodAction(messageTemplate, paymentMethods);
+
             case "FeatureAction":
                 return new FeatureAction(messageTemplate);
+
             case "AuthenticationAction":
-                boolean dsLastYear = actionNode.path("3dslastyear").asBoolean();
-                return new AuthenticationAction(messageTemplate, dsLastYear);
+                return new AuthenticationAction(messageTemplate);
+
             default:
-                throw new IllegalArgumentException("Unknown action types: " + actionType);
+                throw new IllegalArgumentException("Unknown action type: " + actionType);
+        }
+    }
+
+    /**
+     *
+     * @param ruleNode
+     * @return
+     */
+    public Rule parseRule(JsonNode ruleNode) {
+        String ruleType = ruleNode.path("type").asText();
+        JsonNode actionNode = ruleNode.path("action");
+        Action action = loadAction(actionNode);
+
+        switch (ruleType) {
+            case "PaymentMethodRule" -> {
+                List<String> paymentMethods = new ArrayList<>();
+                JsonNode paymentMethodNode = ruleNode.path("paymentMethods");
+                Iterator<JsonNode> paymentMethodNodeIterator = ruleNode.path("paymentMethods").elements();
+                while (paymentMethodNodeIterator.hasNext()) {
+                    paymentMethods.add(paymentMethodNodeIterator.next().asText());
+                }
+                return new PaymentMethodRule(ruleNode.path("location").asText(), paymentMethods,  action);
+            }
+            case "CustomerTypeRule" -> {
+                return new CustomerTypeRule(ruleNode.path("customerType").asText(), action);
+            }
+            case "TransactionAmountRule" -> {
+                return new TransactionAmountRule(ruleNode.path("minAmount").asDouble(),
+                        ruleNode.path("maxAmount").asDouble(), action);
+            }
+            case "TransactionRouteRule" -> {
+                return new TransactionRouteRule(ruleNode.path("currency").asText(),
+                        ruleNode.path("paymentCardNetwork").asText(), action);
+            }
+            case "NewFeatureRule" -> {
+                return new NewFeatureRule(ruleNode.path("customerType").asText(), action);
+            }
+            case "CardTypeRule" -> {
+                return new CardTypeRule(ruleNode.path("cardType").asText(), action);
+            }
+            case "PaymentCardNetworkRule" -> {
+                return new PaymentCardNetworkRule(ruleNode.path("paymentNetwork").asText(), action);
+            }
+
+            case "DSAuthenticationRule" -> {
+                return new DSAuthenticationRule(accessService, ruleNode.path("customerType").asText(), action);
+            }
+
+            default -> throw new IllegalArgumentException("Unknown rule type: " + ruleType);
         }
     }
 }

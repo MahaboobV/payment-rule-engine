@@ -1,7 +1,7 @@
 package org.payment.rule;
 
 import org.payment.action.Action;
-import org.payment.model.PaymentTransaction;
+import org.payment.model.PaymentTransactionDTO;
 
 public class CardTypeRule implements Rule{
     private String cardType;
@@ -13,7 +13,7 @@ public class CardTypeRule implements Rule{
     }
 
     @Override
-    public boolean evaluate(PaymentTransaction paymentTransaction) {
+    public boolean evaluate(PaymentTransactionDTO paymentTransaction) {
         return paymentTransaction.getCardType().equals(cardType);
     }
 

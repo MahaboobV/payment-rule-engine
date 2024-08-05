@@ -6,7 +6,10 @@ import lombok.*;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PaymentTransaction {
+public class PaymentTransactionDTO {
+    private String transactionId;
+
+    private String customerId;
 
     private String customerType;
 

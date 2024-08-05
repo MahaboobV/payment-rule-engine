@@ -1,13 +1,13 @@
 package org.payment.rule;
 
 import org.payment.action.Action;
-import org.payment.model.PaymentTransaction;
+import org.payment.model.PaymentTransactionDTO;
 
 public class TransactionRouteRule implements Rule{
 
-    private String currency;
-    private String paymentNetwork;
-    private Action action;
+    private final String currency;
+    private final String paymentNetwork;
+    private final Action action;
 
     public TransactionRouteRule(String currency, String paymentNetwork, Action action) {
         this.currency = currency;
@@ -16,7 +16,7 @@ public class TransactionRouteRule implements Rule{
     }
 
     @Override
-    public boolean evaluate(PaymentTransaction paymentTransaction) {
+    public boolean evaluate(PaymentTransactionDTO paymentTransaction) {
 
         return paymentTransaction.getCurrency().equals(currency) && paymentTransaction.getCardType().equals(paymentNetwork);
     }

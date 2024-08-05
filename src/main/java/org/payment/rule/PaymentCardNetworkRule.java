@@ -1,12 +1,12 @@
 package org.payment.rule;
 
 import org.payment.action.Action;
-import org.payment.model.PaymentTransaction;
+import org.payment.model.PaymentTransactionDTO;
 
 public class PaymentCardNetworkRule implements Rule{
 
-    private Action action;
-    private String paymentCardNetwork;
+    private final Action action;
+    private final String paymentCardNetwork;
 
     public PaymentCardNetworkRule(String paymentCardNetwork, Action action) {
         this.paymentCardNetwork = paymentCardNetwork;
@@ -14,7 +14,7 @@ public class PaymentCardNetworkRule implements Rule{
     }
 
     @Override
-    public boolean evaluate(PaymentTransaction paymentTransaction) {
+    public boolean evaluate(PaymentTransactionDTO paymentTransaction) {
         return paymentTransaction.getPaymentCardNetwork().equals(paymentCardNetwork);
     }
 

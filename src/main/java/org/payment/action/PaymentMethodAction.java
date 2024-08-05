@@ -1,21 +1,30 @@
 package org.payment.action;
 
-import org.payment.model.PaymentTransaction;
+import org.payment.model.PaymentTransactionDTO;
 
-public class PaymentMethodAction implements Action{
+import java.util.List;
 
-    private String messageTemplate;
+public class PaymentMethodAction implements Action {
 
-    public PaymentMethodAction(String messageTemplate) {
+    private final String messageTemplate;
+    private final List<String> paymentMethods;
+
+    public PaymentMethodAction(String messageTemplate, List<String> paymentMethods) {
         this.messageTemplate = messageTemplate;
+        this.paymentMethods = paymentMethods;
     }
 
     @Override
-    public void execute(PaymentTransaction transaction) {
-       if(isConditionMet(transaction)) {
-            String message = messageTemplate.replace("{location}", transaction.getLocation());
+    public String execute(PaymentTransactionDTO transaction) {
+        String message = null;
+        if (matchCondition(transaction)) {
+            message = messageTemplate.replace("{location}", transaction.getLocation());
+            message= message.replace("{paymentMethods}", paymentMethods.toString());
             System.out.println(message);
+        }else {
+            message = "Selected payment method :"+transaction.getPaymentMethod() +"is not supported for the country :"+transaction.getLocation();
         }
+        return message;
     }
 
     @Override
@@ -23,8 +32,9 @@ public class PaymentMethodAction implements Action{
         return null;
     }
 
-    public boolean isConditionMet(PaymentTransaction transaction) {
-        return true;
+    public boolean matchCondition(PaymentTransactionDTO transaction) {
+
+        return  paymentMethods.contains(transaction.getPaymentMethod());
     }
 
 
