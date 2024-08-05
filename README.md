@@ -9,9 +9,9 @@ Process payment transactions based on customizable rules
 
 
 # Prerequisites
-Java 17
-Maven 3.8.0 or higher
-An IDE (IntelliJ, Eclipse.)
+. Java 17
+. Maven 3.8.0 or higher
+. An IDE (IntelliJ, Eclipse.)
 
 
 # Getting Started
@@ -23,7 +23,7 @@ cd payment-rule-engine
 
 # Building the Application
 Use Maven to build the project:
-mvn clean install
+. mvn clean install
 
 
 Configuration
