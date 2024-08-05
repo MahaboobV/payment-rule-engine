@@ -1,6 +1,7 @@
 package org.payment.rule;
 
 import org.payment.action.Action;
+import org.payment.action.ErrorAction;
 import org.payment.model.PaymentTransactionDTO;
 
 public class PaymentCardNetworkRule implements Rule{
@@ -21,5 +22,10 @@ public class PaymentCardNetworkRule implements Rule{
     @Override
     public Action getAction() {
         return action;
+    }
+
+    @Override
+    public ErrorAction getErrorAction() {
+        return null;
     }
 }

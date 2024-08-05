@@ -53,9 +53,9 @@ public class RoutingService {
 
                 for (PaymentRules paymentRule : paymentRules) {
                     JsonNode ruleNode = objectMapper.readTree(paymentRule.getRuleData());
-                    if (ruleNode.get("type").asText().equals("TransactionRouteRule") &&
-                            ruleNode.get("paymentNetwork").asText().equals("Mastercard") &&
-                            ruleNode.get("currency").asText().equals("SEK")) {
+                    if (ruleNode.path("type").asText().equals("TransactionRouteRule") &&
+                            ruleNode.path("paymentNetwork").asText().equals("Mastercard") &&
+                            ruleNode.path("currency").asText().equals("SEK")) {
                         Rule rule = ruleLoader.parseRule(ruleNode);
                         Action action = rule.getAction();
                         action.execute(paymentTransactionDTOs);

@@ -1,6 +1,7 @@
 package org.payment.rule;
 
 import org.payment.action.Action;
+import org.payment.action.ErrorAction;
 import org.payment.model.PaymentTransactionDTO;
 import org.payment.service.PaymentRuleEngineService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,5 +26,10 @@ public class CustomerTypeRule implements Rule{
     @Override
     public Action getAction() {
         return action;
+    }
+
+    @Override
+    public ErrorAction getErrorAction() {
+        return null;
     }
 }

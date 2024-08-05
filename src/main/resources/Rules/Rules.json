@@ -16,17 +16,25 @@
       "action": {
         "type": "AuthenticationAction",
         "messageTemplate": "Waive off 3DS for transaction : {dsEnabled}"
+      },
+      "errorAction": {
+        "type": "DSAuthenticationViolationAction",
+        "messageTemplate": "User is not 3DS authenticated atleast in an year"
       }
     },
     {
       "id": "Rule3",
       "type": "PaymentMethodRule",
       "location": "NORWAY",
-      "paymentMethods": ["VIPPS", "Credit Card", "Debit Card", "OnlineBanking"]
+      "paymentMethods": ["VIPPS", "Credit Card", "Debit Card", "OnlineBanking"],
       "action": {
         "type": "PaymentMethodAction",
         "paymentMethods": ["VIPPS", "Credit Card", "Debit Card", "OnlineBanking"],
         "messageTemplate": "Available Payment methods in {location} are : {paymentMethods}"
+      },
+      "errorAction": {
+        "type": "PaymentMethodViolationAction",
+        "messageTemplate": "Selected Payment is not valid in the {location}"
       }
     },
     {
@@ -39,11 +47,16 @@
         "thresholdAmount": 10000.0,
         "location": ["X","Y"],
         "messageTemplate": "Transaction amount exceeds the threshold amount: {thresholdAmount}, additional verification required"
+      },
+      "errorAction": {
+        "type": "TransactionAmountRuleViolationAction",
+        "messageTemplate": "Transaction amount is not valid!"
       }
     },
     {
       "id": "Rule5",
       "type": "CardTypeRule",
+      "paymentMethod": "Credit Card",
       "cardType": "Credit Card",
       "action": {
         "type": "AdditionalFeeAction",

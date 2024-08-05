@@ -102,6 +102,9 @@ public class RuleLoader {
             JsonNode actionNode = ruleNode.path("action");
             Action action = loadAction(actionNode);
 
+            JsonNode errorActionNode = ruleNode.path("errorAction");
+            ErrorAction errorAction = loadErrorAction(errorActionNode);
+
             switch (ruleType) {
                 case "PaymentMethodRule" -> {
                     List<String> paymentMethods = new ArrayList<>();
@@ -110,7 +113,7 @@ public class RuleLoader {
                     while (paymentMethodNodeIterator.hasNext()) {
                         paymentMethods.add(paymentMethodNodeIterator.next().asText());
                     }
-                    rules.add(new PaymentMethodRule(ruleNode.path("location").asText(), paymentMethods, action));
+                    rules.add(new PaymentMethodRule(ruleNode.path("location").asText(), paymentMethods, action, errorAction));
                 }
 
                 case "CustomerTypeRule" -> rules.add(new CustomerTypeRule(ruleNode.path("customerType").asText(), action));
@@ -127,7 +130,7 @@ public class RuleLoader {
 
                 case "PaymentCardNetworkRule" -> rules.add(new PaymentCardNetworkRule(ruleNode.path("paymentNetwork").asText(), action));
 
-                case "DSAuthenticationRule" -> rules.add(new DSAuthenticationRule(accessService, ruleNode.path("customerType").asText(), action));
+                case "DSAuthenticationRule" -> rules.add(new DSAuthenticationRule(accessService, ruleNode.path("customerType").asText(), action, errorAction));
 
                 default -> throw new IllegalArgumentException("Unknown rule type: " + ruleType);
             }
@@ -186,6 +189,17 @@ public class RuleLoader {
         }
     }
 
+    private ErrorAction loadErrorAction(JsonNode actionNode) {
+        String errorActionType = actionNode.path("type").asText();
+        String messageTemplate = actionNode.path("messageTemplate").asText();
+        return switch (errorActionType) {
+            case "PaymentMethodViolationAction", "DSAuthenticationViolationAction", "TransactionAmountRuleViolationAction" -> new ErrorAction(messageTemplate);
+            default -> new ErrorAction(messageTemplate);
+            //  throw new IllegalArgumentException("Unknown error action type :" + errorActionType);
+        };
+
+    }
+
     /**
      *
      * @param ruleNode
@@ -195,6 +209,8 @@ public class RuleLoader {
         String ruleType = ruleNode.path("type").asText();
         JsonNode actionNode = ruleNode.path("action");
         Action action = loadAction(actionNode);
+        JsonNode errorActionNode = ruleNode.path("errorAction");
+        ErrorAction errorAction = loadErrorAction(errorActionNode);
 
         switch (ruleType) {
             case "PaymentMethodRule" -> {
@@ -204,7 +220,7 @@ public class RuleLoader {
                 while (paymentMethodNodeIterator.hasNext()) {
                     paymentMethods.add(paymentMethodNodeIterator.next().asText());
                 }
-                return new PaymentMethodRule(ruleNode.path("location").asText(), paymentMethods,  action);
+                return new PaymentMethodRule(ruleNode.path("location").asText(), paymentMethods,  action, errorAction);
             }
             case "CustomerTypeRule" -> {
                 return new CustomerTypeRule(ruleNode.path("customerType").asText(), action);
@@ -228,7 +244,7 @@ public class RuleLoader {
             }
 
             case "DSAuthenticationRule" -> {
-                return new DSAuthenticationRule(accessService, ruleNode.path("customerType").asText(), action);
+                return new DSAuthenticationRule(accessService, ruleNode.path("customerType").asText(), action, errorAction);
             }
 
             default -> throw new IllegalArgumentException("Unknown rule type: " + ruleType);

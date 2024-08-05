@@ -1,6 +1,7 @@
 package org.payment.rule;
 
 import org.payment.action.Action;
+import org.payment.action.ErrorAction;
 import org.payment.model.PaymentTransactionDTO;
 
 public class NewFeatureRule implements Rule{
@@ -19,5 +20,10 @@ public class NewFeatureRule implements Rule{
     @Override
     public Action getAction() {
         return action;
+    }
+
+    @Override
+    public ErrorAction getErrorAction() {
+        return null;
     }
 }
