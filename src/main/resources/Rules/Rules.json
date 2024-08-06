@@ -26,10 +26,10 @@
       "id": "Rule3",
       "type": "PaymentMethodRule",
       "location": "NORWAY",
-      "paymentMethods": ["VIPPS", "Credit Card", "Debit Card", "OnlineBanking"],
+      "paymentMethods": ["VIPPS"],
       "action": {
         "type": "PaymentMethodAction",
-        "paymentMethods": ["VIPPS", "Credit Card", "Debit Card", "OnlineBanking"],
+        "paymentMethods": ["VIPPS"],
         "messageTemplate": "Available Payment methods in {location} are : {paymentMethods}"
       },
       "errorAction": {
@@ -56,11 +56,11 @@
     {
       "id": "Rule5",
       "type": "CardTypeRule",
-      "paymentMethod": "Credit Card",
       "cardType": "Credit Card",
       "action": {
         "type": "AdditionalFeeAction",
         "thresholdAmount": 10000.0,
+        "paymentMethod": "Credit Card",
         "messageTemplate": "2% of transaction amount {amount} fee would be applicable"
       }
     },

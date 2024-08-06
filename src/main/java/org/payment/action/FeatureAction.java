@@ -13,6 +13,7 @@ public class FeatureAction implements Action {
     @Override
     public String execute(PaymentTransactionDTO transaction) {
         System.out.println(transaction.getCustomerType() + messageTemplate);
+        transaction.setEmployeeFeatureEnabled(true);
         return transaction.getCustomerType() + messageTemplate;
     }
 

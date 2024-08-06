@@ -111,7 +111,7 @@ public class PaymentRuleEngineServiceTest {
         Action action1 = new PaymentMethodAction("PaymentMethod", List.of("VIPPS", "Credit Card"));
         Rule rule1 = new PaymentMethodRule("NORWAY", List.of("VIPPS", "Credit Card"), action1, errorAction);
         rules.add(rule1);
-        Action action2 = new AdditionalFeeAction("Addition fee will be charged!", 10000.00);
+        Action action2 = new AdditionalFeeAction("Addition fee will be charged!", 10000.00, "Credit Card");
         Rule rule2 = new TransactionAmountRule(100.00, 10000.00, action2);
         rules.add(rule2);
 
@@ -137,7 +137,7 @@ public class PaymentRuleEngineServiceTest {
 
         errorResponse = new PaymentTransactionErrorResponseDTO();
         errorResponse.setErroMessage("Rule valuation failed");
-        errorResponse.setDetails(violationList);
+        errorResponse.setRuleViolation(violationList.get(0));
     }
 
     @Test

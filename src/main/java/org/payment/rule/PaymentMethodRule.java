@@ -21,8 +21,7 @@ public class PaymentMethodRule implements Rule{
 
     @Override
     public boolean evaluate(PaymentTransactionDTO paymentTransaction) {
-        return paymentTransaction.getLocation().equals(location) &&
-                paymentMethods.contains(paymentTransaction.getPaymentMethod());
+        return paymentTransaction.getLocation().equals(location);
     }
 
     @Override

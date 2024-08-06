@@ -13,5 +13,5 @@ public class PaymentTransactionErrorResponseDTO {
 
     private String status;
     private String erroMessage;
-    private List<RuleViolation> details;
+    private RuleViolation ruleViolation;
 }

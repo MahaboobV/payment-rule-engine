@@ -14,7 +14,9 @@ public class AuthenticationAction implements Action {
     public String execute(PaymentTransactionDTO transaction) {
         String message = messageTemplate.replace("{dsEnabled}", String.valueOf(true));
         System.out.println("Authentication not required :"+message);
+        transaction.setDsAuthenticationRequired(false);
         return "Authentication not required :" + message;
+
     }
 
     @Override

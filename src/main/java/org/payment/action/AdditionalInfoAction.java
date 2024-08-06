@@ -1,6 +1,8 @@
 package org.payment.action;
 
+import org.payment.exception.PaymentRuleViolationException;
 import org.payment.model.PaymentTransactionDTO;
+import org.payment.model.PaymentTransactionErrorResponseDTO;
 
 import java.util.List;
 
@@ -26,6 +28,10 @@ public class AdditionalInfoAction implements Action {
         if (isConditionMet(transaction)) {
             message = messageTemplate.replace("{thresholdAmount}", String.valueOf(thresholdAmount));
             System.out.println(message);
+            transaction.setAdditionalVerificationRequired(true);
+            PaymentTransactionErrorResponseDTO errorResponseDTO = new PaymentTransactionErrorResponseDTO();
+            errorResponseDTO.setErroMessage(message);
+            throw new PaymentRuleViolationException(errorResponseDTO);
         }
         return message;
     }

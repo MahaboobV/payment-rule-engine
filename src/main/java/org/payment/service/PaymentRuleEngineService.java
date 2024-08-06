@@ -21,11 +21,13 @@ public class PaymentRuleEngineService {
 
     private final PaymentRuleEngine paymentRuleEngine;
     private final PaymentRuleEngineRepository paymentRuleEngineRepository;
+    private final PaymentTransactionService transactionService;
 
     @Autowired
-    public PaymentRuleEngineService(PaymentRuleEngine paymentRuleEngine, PaymentRuleEngineRepository paymentRuleEngineRepository){
+    public PaymentRuleEngineService(PaymentRuleEngine paymentRuleEngine, PaymentRuleEngineRepository paymentRuleEngineRepository, PaymentTransactionService transactionService){
         this.paymentRuleEngine = paymentRuleEngine;
         this.paymentRuleEngineRepository = paymentRuleEngineRepository;
+        this.transactionService = transactionService;
     }
 
     /**
@@ -40,15 +42,8 @@ public class PaymentRuleEngineService {
         List<Rule> rules = paymentRuleEngineRepository.getAllRules();
         List<String> rulesApplicable = paymentRuleEngine.evaluatePaymentTransaction(rules, transaction);
 
-        PaymentTransactionResponseDTO response = new PaymentTransactionResponseDTO();
-        response.setCustomerId(transaction.getCustomerId());
-        response.setCustomerType(transaction.getCustomerType());
-        response.setPaymentMethod(transaction.getPaymentMethod());
-        response.setAmount(transaction.getAmount());
-        response.setCustomerId(transaction.getCustomerType());
-        response.setLocation(transaction.getLocation());
-        response.setRulesApplicable(rulesApplicable);
-
+        PaymentTransactionResponseDTO response = transactionService.storePaymentTransaction(transaction);
+        response.setRulesApplicable(rulesApplicable.stream().toList());
         return response;
 
     }

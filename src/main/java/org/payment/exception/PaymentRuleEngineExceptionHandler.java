@@ -1,3 +1,4 @@
+
 package org.payment.exception;
 
 import org.payment.model.PaymentTransactionErrorResponseDTO;
@@ -11,6 +12,8 @@ public class PaymentRuleEngineExceptionHandler {
 
     @ExceptionHandler(PaymentRuleViolationException.class)
     public ResponseEntity<PaymentTransactionErrorResponseDTO> handlePaymentRuleViolationExcpetion(PaymentRuleViolationException paymentRuleViolationException) {
+        PaymentTransactionErrorResponseDTO  errorResponseDTO =paymentRuleViolationException.getErrorResponseDTO();
+        errorResponseDTO.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.toString());
         return new ResponseEntity<>(paymentRuleViolationException.getErrorResponseDTO(), HttpStatus.UNPROCESSABLE_ENTITY);
     }
 }

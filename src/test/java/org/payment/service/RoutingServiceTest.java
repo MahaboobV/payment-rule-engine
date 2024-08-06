@@ -84,7 +84,7 @@ public class RoutingServiceTest {
         Rule rule1 = new TransactionRouteRule("SEK",  "Mastercard", action1);
         rules.add(rule1);
 
-        Action action2 = new AdditionalFeeAction("Addition fee will be charged!", 10000.00);
+        Action action2 = new AdditionalFeeAction("Addition fee will be charged!", 10000.00,"Credit Card");
         Rule rule2 = new TransactionAmountRule(100.00, 10000.00, action2);
         rules.add(rule2);
 

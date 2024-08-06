@@ -1,5 +1,5 @@
 
-package org.payment.aws;
+package org.payment.awslamda;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;

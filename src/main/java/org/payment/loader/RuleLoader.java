@@ -162,7 +162,8 @@ public class RuleLoader {
 
             case "AdditionalFeeAction":
                 double tAmount = actionNode.path("thresholdAmount").asDouble();
-                return new AdditionalFeeAction(messageTemplate, tAmount);
+                String paymentMethod1 = actionNode.path("paymentMethod").asText();
+                return new AdditionalFeeAction(messageTemplate, tAmount, paymentMethod1);
 
             case "PaymentMethodAction":
                 JsonNode paymentMethodNode = actionNode.path("paymentMethods");
@@ -215,7 +216,6 @@ public class RuleLoader {
         switch (ruleType) {
             case "PaymentMethodRule" -> {
                 List<String> paymentMethods = new ArrayList<>();
-                JsonNode paymentMethodNode = ruleNode.path("paymentMethods");
                 Iterator<JsonNode> paymentMethodNodeIterator = ruleNode.path("paymentMethods").elements();
                 while (paymentMethodNodeIterator.hasNext()) {
                     paymentMethods.add(paymentMethodNodeIterator.next().asText());

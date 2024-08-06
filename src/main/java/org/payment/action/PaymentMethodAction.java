@@ -23,6 +23,7 @@ public class PaymentMethodAction implements Action {
             message = messageTemplate.replace("{location}", transaction.getLocation());
             message= message.replace("{paymentMethods}", paymentMethods.toString());
             System.out.println(message);
+            transaction.setPaymentMethod(paymentMethods.get(0));
         }else {
             message = "Selected payment method :"+transaction.getPaymentMethod() +"is not supported for the country :"+transaction.getLocation();
             PaymentTransactionErrorResponseDTO errorResponseDTO= new PaymentTransactionErrorResponseDTO();
@@ -38,7 +39,6 @@ public class PaymentMethodAction implements Action {
     }
 
     public boolean matchCondition(PaymentTransactionDTO transaction) {
-
         return  paymentMethods.contains(transaction.getPaymentMethod());
     }
 

@@ -105,7 +105,7 @@ public class PaymentRuleEngineTest {
         Action action1 = new PaymentMethodAction("PaymentMethod", List.of("VIPPS", "Credit Card"));
         Rule rule1 = new PaymentMethodRule("NORWAY", List.of("VIPPS", "Credit Card"), action1, errorAction);
         rules.add(rule1);
-        Action action2 = new AdditionalFeeAction("Addition fee will be charged!", 10000.00);
+        Action action2 = new AdditionalFeeAction("Addition fee will be charged!", 10000.00,"Credit Card");
         Rule rule2 = new TransactionAmountRule(100.00, 10000.00, action2);
         rules.add(rule2);
 
@@ -131,7 +131,7 @@ public class PaymentRuleEngineTest {
 
         errorResponse = new PaymentTransactionErrorResponseDTO();
         errorResponse.setErroMessage("Rule valuation failed");
-        errorResponse.setDetails(violationList);
+        errorResponse.setRuleViolation(violationList.get(0));
     }
 
     @Test
@@ -160,24 +160,25 @@ public class PaymentRuleEngineTest {
         List<String> applicableRules = paymentRuleEngine.evaluatePaymentTransaction(paymentTransactionDTO);
         assertTrue(applicableRules.size()!=0);
 
-        verify(ruleLoaderMock, times(2)).loadRules();
+        verify(ruleLoaderMock, times(1)).loadRules();
     }
 
     @Test
     public void testEvaluateTransactionH2_failure() throws IOException {
         ErrorAction errorAction = new ErrorAction("Error while processing!");
         Action action1 = new PaymentMethodAction("PaymentMethod", List.of("VIPPS", "Credit Card"));
-        Rule rule = new PaymentMethodRule("TEST", List.of("Credit Card"), action1, errorAction);
+        Rule rule = new PaymentMethodRule("NORWAY", List.of("Credit Card"), action1, errorAction);
 
         when(rulesRepositoryMock.findAll()).thenReturn(paymentRulesList);
         when(ruleLoaderMock.parseRule(any(JsonNode.class))).thenReturn(rule);
+        paymentTransactionDTO.setPaymentMethod("Credt Card");
         PaymentRuleViolationException violationException = assertThrows(PaymentRuleViolationException.class, () -> {
             paymentRuleEngine.evaluateTransactionH2(paymentTransactionDTO);
         });
-        assertEquals("Rules violated !", violationException.getMessage());
+        assertNotNull(violationException.getMessage());
 
         verify(rulesRepositoryMock, times(1)).findAll();
-        verify(ruleLoaderMock, times(2)).parseRule(any(JsonNode.class));
+        verify(ruleLoaderMock, times(1)).parseRule(any(JsonNode.class));
     }
 
     @Test

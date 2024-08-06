@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.IOException;
 
 @RestController
@@ -32,13 +33,13 @@ public class    PaymentController {
     }
 
     @PostMapping("/evaluate")
-    public ResponseEntity<PaymentTransactionResponseDTO> evaluateTransaction(@RequestBody PaymentTransactionDTO transaction) throws IOException {
+    public ResponseEntity<PaymentTransactionResponseDTO> evaluateTransaction(@Valid @RequestBody PaymentTransactionDTO transaction) throws IOException {
         PaymentTransactionResponseDTO response = service.evaluateTransactionH2(transaction);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/evaluate/actual")
-    public ResponseEntity<PaymentTransactionResponseDTO> evaluateActualTransaction(@RequestBody PaymentTransactionDTO transaction) throws IOException {
+    public ResponseEntity<PaymentTransactionResponseDTO> evaluateActualTransaction(@Valid @RequestBody PaymentTransactionDTO transaction) throws IOException {
         PaymentTransactionResponseDTO response = service.evaluateTransaction(transaction);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -50,7 +51,7 @@ public class    PaymentController {
     }
 
     @PostMapping("/confirm/transaction")
-    public ResponseEntity<PaymentTransactionResponseDTO> savePaymentTransaction(@RequestBody PaymentTransactionDTO transaction) throws IOException {
+    public ResponseEntity<PaymentTransactionResponseDTO> savePaymentTransaction(@Valid @RequestBody PaymentTransactionDTO transaction) throws IOException {
         PaymentTransactionResponseDTO responseDTO = transactionService.storePaymentTransaction(transaction);
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }

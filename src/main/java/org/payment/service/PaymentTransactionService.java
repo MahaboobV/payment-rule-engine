@@ -35,14 +35,16 @@ public class PaymentTransactionService {
         PaymentTransactionResponseDTO responseDTO = new PaymentTransactionResponseDTO();
         try {
             if (null != transaction) {
-                List<String> rulesApplicable = paymentRuleEngine.evaluatePaymentTransaction(transaction);
+                //List<String> rulesApplicable = paymentRuleEngine.evaluatePaymentTransaction(transaction);
                 PaymentTransaction payementTransaction = mapToPaymentTransaction(transaction);
                 paymentTransactionRepository.save(payementTransaction);
 
-                responseDTO.setCustomerId(transaction.getCustomerId());
-                responseDTO.setAmount(transaction.getAmount());
-                responseDTO.setCurrency(transaction.getCurrency());
-                responseDTO.setRulesApplicable(rulesApplicable);
+                responseDTO.setCustomerId(payementTransaction.getCustomerId());
+                responseDTO.setCustomerType(payementTransaction.getCustomerType());
+                responseDTO.setPaymentMethod(payementTransaction.getPaymentMethod());
+                responseDTO.setAmount(payementTransaction.getAmount());
+                responseDTO.setCustomerId(payementTransaction.getCustomerType());
+                responseDTO.setLocation(payementTransaction.getLocation());
                 responseDTO.setAdditionalInfo("Payment transaction saved!");
             }
         } catch (Exception ex) {
@@ -66,7 +68,7 @@ public class PaymentTransactionService {
         payementTransaction.setCurrency(transaction.getCurrency());
         payementTransaction.setPaymentMethod(transaction.getPaymentMethod());
         payementTransaction.setPaymentCardNetwork(transaction.getPaymentCardNetwork());
-        payementTransaction.setDsEnabled(true);
+        payementTransaction.setDsEnabled(!transaction.isDsAuthenticationRequired());
 
         return payementTransaction;
     }

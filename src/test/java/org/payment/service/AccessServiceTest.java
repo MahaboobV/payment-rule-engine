@@ -43,10 +43,12 @@ public class AccessServiceTest {
     @Test
     public void testCheck3dsAccess() {
         when(transactionRepositoryMock.exist3DSEnabledTransactions(anyString(), any(LocalDateTime.class))).thenReturn(true);
+        when(transactionRepositoryMock.customerExist(anyString())).thenReturn(true);
         boolean response = accessService.check3DSAccess(paymentTransactionDTO);
 
         assertTrue(response);
         verify(transactionRepositoryMock, times(1)).exist3DSEnabledTransactions(anyString(), any(LocalDateTime.class));
+        verify(transactionRepositoryMock, times(1)).customerExist(anyString());
     }
 
 

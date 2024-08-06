@@ -70,14 +70,12 @@ public class PaymentTransactionServiceTest {
     @Test
     public void testStorePaymentTransaction() throws IOException {
         when(paymentTransactionRepositoryMock.save(paymentTransactionEntity)).thenReturn(paymentTransactionEntity);
-        when(paymentRuleEngineMock.evaluatePaymentTransaction(any(PaymentTransactionDTO.class))).thenReturn(List.of("ApplicableRules"));
 
         PaymentTransactionResponseDTO respone = transactionService.storePaymentTransaction(paymentTransactionDTO);
 
-        assertEquals("Payment Transaction Saved!", respone.getAdditionalInfo());
+        assertEquals("Payment transaction saved!", respone.getAdditionalInfo());
 
         verify(paymentTransactionRepositoryMock, times(1)).save(any(PaymentTransaction.class));
-        verify(paymentRuleEngineMock, times(1)).evaluatePaymentTransaction(anyList(), any(PaymentTransactionDTO.class));
 
     }
 }

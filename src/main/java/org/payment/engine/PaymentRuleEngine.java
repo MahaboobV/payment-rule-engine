@@ -123,7 +123,7 @@ public class PaymentRuleEngine {
                 JsonNode rulesNode = rootNode.path("rules");
                 for (JsonNode ruleNode : rulesNode) {
                     //Store in DynamoDB
-                    //storeInDynamoDb(ruleNode);
+                    //responseMessage = storeInDynamoDb(ruleNode);
                     responseMessage = storeInH2Db(ruleNode);
                 }
                 logger.info("Successfully processed and store Json file from S3");
@@ -158,16 +158,17 @@ public class PaymentRuleEngine {
         return ruleLoader.loadPaymentRules();
     }
 
-    private void storeInDynamoDb(JsonNode ruleNode) {
+    private String storeInDynamoDb(JsonNode ruleNode) {
         String ruleId = ruleNode.path("id").asText();
         String ruleData = ruleNode.toString();
 
         Map<String, AttributeValue> item = new HashMap<>();
         item.put("RuleId", AttributeValue.builder().s(ruleId).build());
         item.put("RuleData", AttributeValue.builder().s(ruleData).build());
-
+        logger.info("Storing item ....");
         String putItemResponse = paymentRuleEngineRepository.storeRules(item);
         logger.info("Dynamo DB respose :{}", putItemResponse);
+        return putItemResponse;
     }
 
     private List<PaymentTransactionDTO> setPaymentTransactionsDTO(List<PaymentTransaction> transactions) {
@@ -179,7 +180,7 @@ public class PaymentRuleEngine {
             paymentTransactionDTO.setLocation(transaction.getLocation());
             paymentTransactionDTO.setPaymentMethod(transaction.getPaymentMethod());
             paymentTransactionDTO.setCustomerType(transaction.getCustomerType());
-            paymentTransactionDTO.setDsEnabled(transaction.isDsEnabled());
+            paymentTransactionDTO.setDsAuthenticationRequired(transaction.isDsEnabled());
             paymentTransactionDTO.setTransactionId(transaction.getId());
             transactionDTOS.add(paymentTransactionDTO);
         }
